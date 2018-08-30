@@ -1,6 +1,7 @@
+
 String.prototype.format = function (e) { var t = this; if (arguments.length > 0) if (arguments.length == 1 && typeof e == "object") { for (var n in e) if (e[n] != undefined) { var r = new RegExp("({" + n + "})", "g"); t = t.replace(r, e[n]) } } else for (var i = 0; i < arguments.length; i++) if (arguments[i] != undefined) { var r = new RegExp("({)" + i + "(})", "g"); t = t.replace(r, arguments[i]) } return t };
-JSON.request=function(url,success,error){if(url.indexOf("&callback=?")<0){if(url.indexOf("?")>0){url+="&callback=?"}else{url+="?callback=?"}}$.ajax({async:true,url:url,type:"get",dataType:"jsonp",jsonp:"callback",success:function(result){if(typeof(success)=='function'){success(typeof(result)=='string'?eval(result):result)}},error:function(){if(typeof(error)=='function'){error()}}})};
-//JSON.jsonp=function(url,funcCallback){window.parseLocation=function(results){var response=$.parseJSON(results);document.body.removeChild(document.getElementById('getJsonP'));delete window.parseLocation;if(funcCallback){funcCallback(response)}};function getJsonP(url){url=url+'&callback=parseLocation';var script=document.createElement('script');script.id='getJsonP';script.src=url;script.async=true;document.body.appendChild(script)}if(XMLHttpRequest){var xhr=new XMLHttpRequest();if('withCredentials'in xhr){var xhr=new XMLHttpRequest();xhr.onreadystatechange=function(){if(xhr.readyState==4){if(xhr.status==200){var response=$.parseJSON(xhr.responseText);if(funcCallback){funcCallback(response)}}else if(xhr.status==0||xhr.status==400){getJsonP(url)}else{}}};xhr.open('GET',url,true);xhr.send()}else if(XDomainRequest){var xdr=new XDomainRequest();xdr.onerror=function(err){};xdr.onload=function(){var response=JSON.parse(xdr.responseText);if(funcCallback){funcCallback(response)}};xdr.open('GET',url);xdr.send()}else{getJsonP(url)}}};
+//JSON1.request=function(url,success,error){if(url.indexOf("&callback=?")<0){if(url.indexOf("?")>0){url+="&callback=?"}else{url+="?callback=?"}}$.ajax({async:true,url:url,type:"get",dataType:"jsonp",jsonp:"callback",success:function(result){if(typeof(success)=='function'){success(typeof(result)=='string'?eval(result):result)}},error:function(){if(typeof(error)=='function'){error()}}})};
+//JSON1.jsonp=function(url,funcCallback){window.parseLocation=function(results){var response=$.parseJSON(results);document.body.removeChild(document.getElementById('getJsonP'));delete window.parseLocation;if(funcCallback){funcCallback(response)}};function getJsonP(url){url=url+'&callback=parseLocation';var script=document.createElement('script');script.id='getJsonP';script.src=url;script.async=true;document.body.appendChild(script)}if(XMLHttpRequest){var xhr=new XMLHttpRequest();if('withCredentials'in xhr){var xhr=new XMLHttpRequest();xhr.onreadystatechange=function(){if(xhr.readyState==4){if(xhr.status==200){var response=$.parseJSON(xhr.responseText);if(funcCallback){funcCallback(response)}}else if(xhr.status==0||xhr.status==400){getJsonP(url)}else{}}};xhr.open('GET',url,true);xhr.send()}else if(XDomainRequest){var xdr=new XDomainRequest();xdr.onerror=function(err){};xdr.onload=function(){var response=JSON.parse(xdr.responseText);if(funcCallback){funcCallback(response)}};xdr.open('GET',url);xdr.send()}else{getJsonP(url)}}};
 window.NULL = null;
 $hub = null;
 var localPushLastPayload = null;
@@ -42,6 +43,8 @@ function getPlusInfo(){
 
 var inBrowser = 0;
 var notificationChecked = 0;
+var loginTimer = 0;
+
 
 var loginInterval = null;
 var pushConfigRetryMax = 40;
@@ -131,13 +134,13 @@ function setupPush(){
                 App.showProgressbar(container); 
                
                 loginTimer = setInterval(function() {
-                    //alert(loginDone);
-                    if (loginDone) {
+                    //alert(notificationChecked);
+                    if (notificationChecked) {
                         clearInterval(loginTimer);
                         setTimeout(function(){
                             //alert('before processClickOnPushNotification');
                             processClickOnPushNotification([data.additionalData.payload]);
-                            App.hideProgressbar(container);               
+                            App.hideProgressbar();               
                         },1000); 
                     }
                 }, 1000); 
@@ -168,7 +171,7 @@ function onAppResume(){
 function backFix(event){
     var page=App.getCurrentView().activePage;        
     if(page.name=="index"){ 
-        App.confirm(LANGUAGE.PROMPT_MSG015, function () {        
+        App.confirm(LANGUAGE.PROMPT_MSG018, function () {        
             navigator.app.exitApp();
         });
     }else{
@@ -277,6 +280,7 @@ var StreetViewService = null;
 var searchbar = null;
 var statusCommand = 1;
 var virtualAssetList = null;
+var virtualNotificationList = null;
 var verifyCheck = {}; // for password reset
 var URL_REGISTRATION = "http://app.quikprotect.co/activation/register?";
 var PAYPAL_URL = {};
@@ -510,7 +514,7 @@ $$('body').on('click', '#menu li', function () {
     }
 });
 
-/*$$('body').on('click', '.navbar_title_index', function(){
+$$('body').on('click', '.navbar_title_index', function(){
     //var payload = {};
     //console.log('')
     var payload = {
@@ -529,7 +533,7 @@ $$('body').on('click', '#menu li', function () {
     };
     //plus.push.createMessage("Welcome", payload, {cover:false} );
     showMsgNotification([payload]);
-});*/
+});
     
 $$(document).on('click', 'a.tab-link', function(e){
     e.preventDefault(); 
@@ -767,7 +771,7 @@ App.onPageInit('resetPwd', function(page) {
         }else{
             var url = API_URL.URL_VERIFY_BY_EMAIL.format(email);             
             App.showPreloader();
-            JSON.request(url, function(result){                 
+            JSON1.request(url, function(result){                 
                     console.log(result);     
 
                     if (result.MajorCode == '000' && result.MinorCode == '0000') {
@@ -821,7 +825,7 @@ App.onPageInit('resetPwdNew', function(page) {
             }else{
                 var url = API_URL.URL_RESET_PASSWORD.format(email,encodeURIComponent(newPassword),verifyCheck.CheckCode);             
                 App.showPreloader();
-                JSON.request(url, function(result){ 
+                JSON1.request(url, function(result){ 
                         if (result.MajorCode == '000' && result.MinorCode == '0000') {
                             App.alert(LANGUAGE.PASSWORD_RESET_MSG12);
                             $$('#account').val(email);
@@ -890,7 +894,7 @@ App.onPageInit('asset', function(page) {
             );
         
         App.showPreloader();
-        JSON.request(url, function(result){
+        JSON1.request(url, function(result){
                 
                 console.log(result);  
                 App.hidePreloader();                  
@@ -923,7 +927,7 @@ App.onPageInit('asset', function(page) {
             );
         
         App.showPreloader();        
-        JSON.request(url, function(result){ 
+        JSON1.request(url, function(result){ 
                 App.hidePreloader();                 
                 if(result.length > 0 || result.ERROR == "ARREARS"){                       
                     showNoCreditMessage();  
@@ -955,7 +959,7 @@ App.onPageInit('asset', function(page) {
             );
         
         App.showPreloader();        
-        JSON.request(url, function(result){ 
+        JSON1.request(url, function(result){ 
                 App.hidePreloader();                 
                 console.log(result);
 
@@ -1025,7 +1029,7 @@ App.onPageInit('asset.edit', function (page) {
                 encodeURIComponent($$(page.container).find('input[name="Describe4"]').val())
             ); 
         
-        JSON.request(url, function(result){   
+        JSON1.request(url, function(result){   
         console.log(result);             
                 if (result.MajorCode == '000') { 
                     if (assetImg.src !== 'resources/images/svg_add_photo_general.svg') {
@@ -1078,7 +1082,7 @@ App.onPageInit('asset.add', function (page) {
                 asset.Describe4             
             ); 
         
-        JSON.request(url, function(result){ 
+        JSON1.request(url, function(result){ 
                 console.log(result);               
                 if (result.MajorCode == '000') {  
                     asset.AppPhoto = assetImg.src;                           
@@ -1142,7 +1146,7 @@ App.onPageInit('asset.alarm', function (page) {
             );                    
         
         App.showPreloader();
-        JSON.request(url, function(result){ 
+        JSON1.request(url, function(result){ 
                 console.log(result);                  
                 if (result.MajorCode == '000') {
                     if (result.MinorCode == '1006') {
@@ -1203,7 +1207,7 @@ App.onPageInit('profile', function (page) {
             ); 
 
         App.showPreloader();
-        JSON.request(url, function(result){ 
+        JSON1.request(url, function(result){ 
                 console.log(userInfo);
                 console.log(user);
                 console.log(url);
@@ -1412,7 +1416,7 @@ App.onPageInit('alarms.select', function (page) {
             );                    
         
         App.showPreloader();
-        JSON.request(url, function(result){ 
+        JSON1.request(url, function(result){ 
                 console.log(result);                  
                 if (result.MajorCode == '000') {
                     if (result.MinorCode == '1006') {
@@ -1459,7 +1463,7 @@ App.onPageInit('profile.newPwd', function (page) {
                     ); 
                 //console.log(url);
                 App.showPreloader();
-                JSON.request(url, function(result){ 
+                JSON1.request(url, function(result){ 
                         //console.log(result);                  
                         if (result.MajorCode == '000') { 
                             App.alert(LANGUAGE.PROMPT_MSG015, function(){
@@ -1665,7 +1669,7 @@ App.onPageInit('upgrade', function (page) {
                                       TargetAsset.IMEI);
              
         App.showPreloader();
-        JSON.request(urlPreUpgrade, function(result){
+        JSON1.request(urlPreUpgrade, function(result){
             App.hidePreloader();  
             console.log(result);          
             if(result.MajorCode == '000') {
@@ -1744,7 +1748,7 @@ function clearUserInfo(){
     }
     
 
-    JSON.request(API_URL.URL_GET_LOGOUT.format(MinorToken, deviceToken, mobileToken), function(result){
+    JSON1.request(API_URL.URL_GET_LOGOUT.format(MinorToken, deviceToken, mobileToken), function(result){
                     console.log(result);                        
     });         
     $$("input[name='account']").val(userName); 
@@ -1807,7 +1811,7 @@ function login(){
                                      , encodeURIComponent(deviceToken) 
                                      , deviceType);  
                           
-    JSON.request(urlLogin, function(result){
+    JSON1.request(urlLogin, function(result){
             App.hidePreloader();     
             console.log(result);      
             if(result.MajorCode == '000') {
@@ -2109,6 +2113,7 @@ function loadPositionPage(params){
             Address: LANGUAGE.COM_MSG10,                
             Lat: details.latlng.lat,
             Lng: details.latlng.lng,
+            Coords: 'GPS: ' + Helper.convertDMS(details.latlng.lat, details.latlng.lng),
         }
     }); 
 
@@ -2282,7 +2287,7 @@ function checkBalanceAndLoadPage(pageName){
 		var userInfo = getUserinfo(); 
     	var url = API_URL.URL_GET_BALANCE.format(userInfo.MajorToken, userInfo.MinorToken); 
 
-    	JSON.request(url, function(result){                    
+    	JSON1.request(url, function(result){                    
             if (result.MajorCode == '000') {                    
                 userInfo.UserInfo.SMSTimes = result.Data.SMSTimes;  
                 setUserinfo(userInfo); 
@@ -2440,7 +2445,7 @@ function getNewNotifications(params){
         notificationChecked = 0;
         var url = API_URL.URL_GET_NEW_NOTIFICATIONS.format(MinorToken,encodeURIComponent(deviceToken));         
         
-        JSON.request(url, function(result){
+        JSON1.request(url, function(result){
                 App.hideProgressbar();            
                 notificationChecked = 1;
                 if (params && params.ptr === true) {
@@ -2845,6 +2850,8 @@ function showNotification(list){
                 newList.unshift(data);             
             }
         }
+        console.log(virtualNotificationList);
+        console.log(newList);
         if (virtualNotificationList && newList.length !== 0) {
             virtualNotificationList.prependItems(newList); 
         }   
@@ -2955,7 +2962,7 @@ function balance(){
     var userInfo = getUserinfo(); 
     var url = API_URL.URL_GET_BALANCE.format(userInfo.MajorToken, userInfo.MinorToken); 
     
-    JSON.request(url, function(result){ 
+    JSON1.request(url, function(result){ 
             //console.log(result);                  
             if (result.MajorCode == '000') {                    
                 userInfo.UserInfo.SMSTimes = result.Data.SMSTimes;  
@@ -2972,7 +2979,7 @@ function afterRechergeCredits(){
     App.showPreloader();
     var userInfo = getUserinfo(); 
     var url = API_URL.URL_GET_BALANCE.format(userInfo.MajorToken, userInfo.MinorToken);                         
-    JSON.request(url, function(result){ 
+    JSON1.request(url, function(result){ 
             //console.log(result);                  
             if (result.MajorCode == '000') {                    
                 userInfo.UserInfo.SMSTimes = result.Data.SMSTimes;  

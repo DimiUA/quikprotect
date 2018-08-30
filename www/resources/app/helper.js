@@ -1,5 +1,7 @@
+var JSON1 = {};
 String.prototype.format = function (e) { var t = this; if (arguments.length > 0) if (arguments.length == 1 && typeof e == "object") { for (var n in e) if (e[n] != undefined) { var r = new RegExp("({" + n + "})", "g"); t = t.replace(r, e[n]) } } else for (var i = 0; i < arguments.length; i++) if (arguments[i] != undefined) { var r = new RegExp("({)" + i + "(})", "g"); t = t.replace(r, arguments[i]) } return t };
-JSON.jsonp=function(url,funcCallback){window.parseLocation=function(results){var response=$.parseJSON(results);document.body.removeChild(document.getElementById('getJsonP'));delete window.parseLocation;if(funcCallback){funcCallback(response)}};function getJsonP(url){url=url+'&callback=parseLocation';var script=document.createElement('script');script.id='getJsonP';script.src=url;script.async=true;document.body.appendChild(script)}if(XMLHttpRequest){var xhr=new XMLHttpRequest();if('withCredentials'in xhr){var xhr=new XMLHttpRequest();xhr.onreadystatechange=function(){if(xhr.readyState==4){if(xhr.status==200){var response=$.parseJSON(xhr.responseText);if(funcCallback){funcCallback(response)}}else if(xhr.status==0||xhr.status==400){getJsonP(url)}else{}}};xhr.open('GET',url,true);xhr.send()}else if(XDomainRequest){var xdr=new XDomainRequest();xdr.onerror=function(err){};xdr.onload=function(){var response=JSON.parse(xdr.responseText);if(funcCallback){funcCallback(response)}};xdr.open('GET',url);xdr.send()}else{getJsonP(url)}}};
+JSON1.request=function(url,success,error){if(url.indexOf("&callback=?")<0){if(url.indexOf("?")>0){url+="&callback=?"}else{url+="?callback=?"}}$.ajax({async:true,url:url,type:"get",dataType:"jsonp",jsonp:"callback",success:function(result){if(typeof(success)=='function'){success(typeof(result)=='string'?eval(result):result)}},error:function(){if(typeof(error)=='function'){error()}}})};
+JSON1.jsonp=function(url,funcCallback){window.parseLocation=function(results){var response=$.parseJSON(results);document.body.removeChild(document.getElementById('getJsonP'));delete window.parseLocation;if(funcCallback){funcCallback(response)}};function getJsonP(url){url=url+'&callback=parseLocation';var script=document.createElement('script');script.id='getJsonP';script.src=url;script.async=true;document.body.appendChild(script)}if(XMLHttpRequest){var xhr=new XMLHttpRequest();if('withCredentials'in xhr){var xhr=new XMLHttpRequest();xhr.onreadystatechange=function(){if(xhr.readyState==4){if(xhr.status==200){var response=$.parseJSON(xhr.responseText);if(funcCallback){funcCallback(response)}}else if(xhr.status==0||xhr.status==400){getJsonP(url)}else{}}};xhr.open('GET',url,true);xhr.send()}else if(XDomainRequest){var xdr=new XDomainRequest();xdr.onerror=function(err){};xdr.onload=function(){var response=JSON.parse(xdr.responseText);if(funcCallback){funcCallback(response)}};xdr.open('GET',url);xdr.send()}else{getJsonP(url)}}};
 var EARTH_RADIUS = 6378137.0; //单位M
 var PI = Math.PI; 
 function getRad(d){ 
@@ -100,11 +102,11 @@ Helper ={
     getAddressByGeocoder: function(latlng,replyFunc){
         var url = "https://nominatim.sinopacific.com.ua/reverse.php?format=json&lat={0}&lon={1}&zoom=18&addressdetails=1".format(latlng.lat, latlng.lng);
         var coords = latlng.lat + ', '+ latlng.lng;
-        JSON.jsonp(url, function(result){ 
+        JSON1.jsonp(url, function(result){ 
             if (result.display_name) { replyFunc(result.display_name); }else{ replyFunc(coords); }            
         },function(){
             url = "https://nominatim.openstreetmap.org/reverse?format=json&lat={0}&lon={1}&zoom=18&addressdetails=1".format(latlng.lat, latlng.lng);
-            JSON.jsonp(url, function(result2){ 
+            JSON1.jsonp(url, function(result2){ 
                 if (result2.display_name) { replyFunc(result2.display_name); }else{ replyFunc(coords); }      
             },function(){
                 replyFunc(coords);
@@ -115,12 +117,12 @@ Helper ={
     getLatLngByGeocoder: function(address,replyFunc){
         var url = "https://nominatim.openstreetmap.org/search?q={0}&format=json&polygon=1&addressdetails=1".format(address);
         var res = null;
-        JSON.jsonp(url, function(result){ 
+        JSON1.jsonp(url, function(result){ 
             res = new L.LatLng(result[0].lat, result[0].lon);
             replyFunc(res);
         },function(){
             url = "https://nominatim.sinopacific.com.ua/?q={0}&format=json&polygon=1&addressdetails=1".format(address);
-            JSON.jsonp(url, function(result2){ 
+            JSON1.jsonp(url, function(result2){ 
                 res = new L.LatLng(result2[0].lat, result2[0].lon);
                 replyFunc(res);
             },function(){
@@ -151,6 +153,24 @@ Helper ={
         L.control.layers(layers).addTo(map);            
 
         return map;
+    },
+    toDegreesMinutesAndSeconds: function (coordinate) {
+            var absolute = Math.abs(coordinate);
+            var degrees = Math.floor(absolute);
+            var minutesNotTruncated = (absolute - degrees) * 60;
+            var minutes = Math.floor(minutesNotTruncated);
+            var seconds = Math.floor((minutesNotTruncated - minutes) * 60);
+
+            return degrees + " " + minutes + " " + seconds;
+    },
+    convertDMS: function (lat, lng) {
+            var latitude = Helper.toDegreesMinutesAndSeconds(lat);
+            var latitudeCardinal = Math.sign(lat) >= 0 ? "N" : "S";
+
+            var longitude = Helper.toDegreesMinutesAndSeconds(lng);
+            var longitudeCardinal = Math.sign(lng) >= 0 ? "E" : "W";
+
+            return latitude + " " + latitudeCardinal + "\n" + longitude + " " + longitudeCardinal;
     },
    getDistance:function(lat1,lng1,lat2,lng2){
          var f = getRad((lat1 + lat2)/2);
