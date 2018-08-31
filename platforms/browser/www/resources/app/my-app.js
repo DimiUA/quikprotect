@@ -160,8 +160,11 @@ function onAppPause(){
         $hub.stop();
     }
 } 
-function onAppResume(){ 
-    getNewNotifications(); 
+function onAppResume(){     
+    if (localStorage.ACCOUNT && localStorage.PASSWORD) {
+        getNewData();
+        getNewNotifications();
+    }  
     if ($hub) {
         $hub.start();
     } 
@@ -984,6 +987,8 @@ App.onPageInit('asset', function(page) {
                     
                 }else if(result.MajorCode == '100' && result.MinorCode == '1006'){
                     showNoCreditMessage();  
+                }else if(result.MajorCode == '200' && result.Data && result.Data.ERROR == 'NOT_SUPPORT'){
+                    showModalMessage(TargetAsset.IMEI, LANGUAGE.PROMPT_MSG053);
                 }else{
                 	
                     App.addNotification({
@@ -1856,6 +1861,32 @@ function login(){
    
 }
 
+function getNewData(){
+    var mobileToken = !localStorage.PUSH_MOBILE_TOKEN ? '111' : localStorage.PUSH_MOBILE_TOKEN;
+    var appKey = !localStorage.PUSH_APP_KEY ? '111' : localStorage.PUSH_APP_KEY;
+    var deviceToken = !localStorage.PUSH_DEVICE_TOKEN ? '111' : localStorage.PUSH_DEVICE_TOKEN;
+    var deviceType = !localStorage.DEVICE_TYPE ? 'web' : localStorage.DEVICE_TYPE;
+    
+    var urlLogin = API_URL.URL_GET_LOGIN.format(localStorage.ACCOUNT
+                                     , encodeURIComponent(localStorage.PASSWORD)
+                                     , appKey
+                                     , mobileToken
+                                     , encodeURIComponent(deviceToken) 
+                                     , deviceType);  
+                          
+    JSON1.request(urlLogin, function(result){  
+            console.log(result);      
+            if(result.MajorCode == '000') {    
+                setUserinfo(result.Data);
+                setAssetList(result.Data.AssetArray);
+                updateUserCrefits(result.Data.UserInfo.SMSTimes);
+
+            }
+        },
+        function(){ console.log('error on getNewData()');  }
+    ); 
+}
+
 function refreshToken(newDeviceToken){
     console.log('refreshToken() called');
     var userInfo = getUserinfo();
@@ -2333,6 +2364,21 @@ function showNoCreditMessage(){
 	      	},
 	    ]
 	});             
+}
+
+function showModalMessage(header, body){
+    var modalTex = '<div class="color-red custom-modal-title">'+ header +'</div>' +
+                    '<div class="custom-modal-text">'+ body +'</div>';                            
+    App.modal({
+           title: '<img class="custom-modal-logo" src="resources/images/login_logo.png" alt=""/>',
+            text: modalTex,                                
+         buttons: [
+            {
+                text: LANGUAGE.COM_MSG31
+            },
+            
+        ]
+    });          
 }
 
 function loadPageAssetAlarm(){
