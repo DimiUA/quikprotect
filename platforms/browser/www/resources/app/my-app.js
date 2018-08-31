@@ -514,7 +514,7 @@ $$('body').on('click', '#menu li', function () {
     }
 });
 
-/*$$('body').on('click', '.navbar_title_index', function(){
+$$('body').on('click', '.navbar_title ', function(){
     //var payload = {};
     //console.log('')
     var payload = {
@@ -533,7 +533,7 @@ $$('body').on('click', '#menu li', function () {
     };
     //plus.push.createMessage("Welcome", payload, {cover:false} );
     showMsgNotification([payload]);
-});*/
+});
     
 $$(document).on('click', 'a.tab-link', function(e){
     e.preventDefault(); 

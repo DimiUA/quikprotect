@@ -65,6 +65,7 @@ window.LanguagePackages= {
 		"PROMPT_MSG030": "Access restricted",
 		"PROMPT_MSG031": "Demo accounts has restricted access",
 		"PROMPT_MSG052": "App can't get phone details for push notifications. Please, logout and login again.",
+		"PROMPT_MSG053": "Device does not support this feature",
 
 		"LOGIN_MSG01": "The login(email) or password you entered is incorrect.",
 		"LOGIN_MSG02": "Login Name / Email",
