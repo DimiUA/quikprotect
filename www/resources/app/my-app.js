@@ -3113,6 +3113,49 @@ function getImg(){
     }
 }   
 
+//Take pictures
+/*function getImage() {
+    var cmr = plus.camera.getCamera();
+    cmr.captureImage( function (p) {
+        plus.io.resolveLocalFileSystemURL( p, function ( entry ) {    
+            var localurl = entry.toLocalURL();//
+            GetBase64Code(localurl);
+        });
+    });
+}
+//Select from album
+function galleryImgs(){
+    plus.gallery.pick( function(e){
+        GetBase64Code(e.files[0]);
+    }, function ( e ) {
+        //outSet( "CANCEL SELECT" );
+    },{filter:"image",multiple:true, maximum:1});
+}
+
+function GetBase64Code(path) //image path
+{
+    var bitmap = new plus.nativeObj.Bitmap("test");
+    // load image
+    bitmap.load(path,function(){
+        var base4=bitmap.toBase64Data();        
+        
+        mainView.router.load({
+            url: 'resources/templates/asset.edit.photo.html',
+            context: {
+                imgSrc: base4
+            }
+        });
+       
+        //console.log('IMAGEЈє'+base4);
+    },function(e){
+        //alert('ERRORЈє'+JSON.stringify(e));
+    });
+}*/
+
+
+
+
+ 
 
 
 function getImage(source){
