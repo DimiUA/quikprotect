@@ -2,7 +2,6 @@ String.prototype.format = function (e) { var t = this; if (arguments.length > 0)
 //JSON1.request=function(url,success,error){if(url.indexOf("&callback=?")<0){if(url.indexOf("?")>0){url+="&callback=?"}else{url+="?callback=?"}}$.ajax({async:true,url:url,type:"get",dataType:"jsonp",jsonp:"callback",success:function(result){if(typeof(success)=='function'){success(typeof(result)=='string'?eval(result):result)}},error:function(){if(typeof(error)=='function'){error()}}})};
 //JSON.jsonp=function(url,funcCallback){window.parseLocation=function(results){var response=$.parseJSON(results);document.body.removeChild(document.getElementById('getJsonP'));delete window.parseLocation;if(funcCallback){funcCallback(response)}};function getJsonP(url){url=url+'&callback=parseLocation';var script=document.createElement('script');script.id='getJsonP';script.src=url;script.async=true;document.body.appendChild(script)}if(XMLHttpRequest){var xhr=new XMLHttpRequest();if('withCredentials'in xhr){var xhr=new XMLHttpRequest();xhr.onreadystatechange=function(){if(xhr.readyState==4){if(xhr.status==200){var response=$.parseJSON(xhr.responseText);if(funcCallback){funcCallback(response)}}else if(xhr.status==0||xhr.status==400){getJsonP(url)}else{}}};xhr.open('GET',url,true);xhr.send()}else if(XDomainRequest){var xdr=new XDomainRequest();xdr.onerror=function(err){};xdr.onload=function(){var response=JSON.parse(xdr.responseText);if(funcCallback){funcCallback(response)}};xdr.open('GET',url);xdr.send()}else{getJsonP(url)}}};
 window.NULL = null;
-var localPushLastPayload = null;
 window.COM_TIMEFORMAT = 'YYYY-MM-DD HH:mm:ss';
 function setUserinfo(user){localStorage.setItem("COM.QUIKTRAK.LIVE.USERINFO", JSON.stringify(user));};
 function getUserinfo(){var ret = {};var str = localStorage.getItem("COM.QUIKTRAK.LIVE.USERINFO");if(str) {ret = JSON.parse(str);} return ret;};
@@ -20,7 +19,7 @@ function getPlusInfo(){
     var uid = guid();
     if(window.device) {                  
         if(!localStorage.PUSH_MOBILE_TOKEN){
-        localStorage.PUSH_MOBILE_TOKEN = uid;
+            localStorage.PUSH_MOBILE_TOKEN = uid;
         }       
         localStorage.PUSH_APP_KEY = BuildInfo.packageName;
         localStorage.PUSH_APPID_ID = BuildInfo.packageName; 
@@ -68,15 +67,15 @@ function onDeviceReady(){
 
     getPlusInfo(); 
 
-    //if (!inBrowser) {
-        if (localStorage.ACCOUNT && localStorage.PASSWORD) {
+    if (!inBrowser) {
+        if (getUserinfo().MinorToken) {
             //login(); 
             preLogin();   
         }
         else {
             logout();
         } 
-    //}
+    }
 
     document.addEventListener("backbutton", backFix, false); 
     document.addEventListener("resume", onAppResume, false);
@@ -147,23 +146,30 @@ function setupPush(){
         });
 
         if (device && device.platform && device.platform.toLowerCase() == 'ios') {
-                push.finish(
-                    () => {
-                      console.log('processing of push data is finished');
-                    },
-                    () => {
-                      console.log(
-                        'something went wrong with push.finish for ID =',
-                        data.additionalData.notId
-                      );
-                    },
+            push.finish(
+                () => {
+                  console.log('processing of push data is finished');
+                },
+                () => {
+                  console.log(
+                    'something went wrong with push.finish for ID =',
                     data.additionalData.notId
-                );
-            }
+                  );
+                },
+                data.additionalData.notId
+            );
+        }
 
  
         if　(!localStorage.ACCOUNT){
-            push.clearAllNotifications();
+            push.clearAllNotifications(
+                () => {
+                  console.log('success');
+                },
+                () => {
+                  console.log('error');
+                }
+            );
         }
 }
 
@@ -1678,11 +1684,15 @@ function clearUserInfo(){
         localStorage.elem_rc_flag = 1;
     }
     
-
-    JSON1.request(API_URL.URL_GET_LOGOUT.format(MinorToken, deviceToken, mobileToken), function(result){
+    if (MinorToken) {
+        JSON1.request(API_URL.URL_GET_LOGOUT.format(MinorToken, deviceToken, mobileToken), function(result){
                     console.log(result);                        
-    });         
-    $$("input[name='account']").val(userName); 
+        }); 
+    }
+    if (userName) {
+        $$("input[name='account']").val(userName); 
+    }  
+    
 }
 
 function logout(){ 
@@ -1692,6 +1702,7 @@ function logout(){
 }
 
 function preLogin(){
+    console.log('prelogin here');
     hideKeyboard();
     getPlusInfo();
     App.showPreloader();
