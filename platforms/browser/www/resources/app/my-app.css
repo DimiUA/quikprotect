@@ -725,6 +725,7 @@ body.with-panel-left-cover .panel-overlay{
 		    -webkit-line-clamp: 3;
 		    -webkit-box-orient: vertical;
 		    display: -webkit-inline-box;
+		        font-size: 14px;
 		}
 		
 		.position_bottom .address:before {
