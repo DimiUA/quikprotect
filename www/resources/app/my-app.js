@@ -16,7 +16,7 @@ function guid() {
 }
 
 function getPlusInfo(){
-    alert('getPlusInfo called');
+    //alert('getPlusInfo called');
     var uid = guid();
     if(window.device) {                  
         if(!localStorage.PUSH_MOBILE_TOKEN){
@@ -55,21 +55,22 @@ if( navigator.userAgent.match(/Windows/i) ){
 document.addEventListener("deviceready", onDeviceReady, false ); 
 
 function onDeviceReady(){ 
-    alert('onDeviceReady called');
+    //alert('onDeviceReady called');
     //fix app images and text size
     if (window.MobileAccessibility) {
         window.MobileAccessibility.usePreferredTextZoom(false);    
     }
-
+    
+    //alert('before StatusBar');
     if (StatusBar) {
         StatusBar.styleDefault();
     } 
-
+    //alert('before setupPush');
     setupPush();
 
     getPlusInfo(); 
 
-     alert('before check isLogined');
+     //alert('before check isLogined');
     if (getUserinfo().MinorToken) {
         //login(); 
         preLogin();   
@@ -145,23 +146,22 @@ function setupPush(){
                     }
                 }, 1000); 
             }
-        });
 
-        if (device && device.platform && device.platform.toLowerCase() == 'ios') {
-            push.finish(
-                () => {
-                  console.log('processing of push data is finished');
-                },
-                () => {
-                  console.log(
-                    'something went wrong with push.finish for ID =',
+            if (device && device.platform && device.platform.toLowerCase() == 'ios') {
+                push.finish(
+                    () => {
+                      console.log('processing of push data is finished');
+                    },
+                    () => {
+                      console.log(
+                        'something went wrong with push.finish for ID =',
+                        data.additionalData.notId
+                      );
+                    },
                     data.additionalData.notId
-                  );
-                },
-                data.additionalData.notId
-            );
-        }
-
+                );
+            }
+        });
  
         if　(!localStorage.ACCOUNT){
             push.clearAllNotifications(
@@ -1696,13 +1696,13 @@ function clearUserInfo(){
 
 function logout(){ 
     //alert('logout'); 
-    alert('logout called');
+    //alert('logout called');
     clearUserInfo();
     App.loginScreen();   
 }
 
 function preLogin(){
-     alert('prelogin called');
+     //alert('prelogin called');
     
     hideKeyboard();
     getPlusInfo();

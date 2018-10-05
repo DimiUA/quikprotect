@@ -60,11 +60,11 @@ function onDeviceReady(){
     if (window.MobileAccessibility) {
         window.MobileAccessibility.usePreferredTextZoom(false);    
     }
-
+    alert('before StatusBar');
     if (StatusBar) {
         StatusBar.styleDefault();
     } 
-
+    alert('before setupPush');
     setupPush();
 
     getPlusInfo(); 
