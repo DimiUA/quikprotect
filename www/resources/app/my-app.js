@@ -16,6 +16,7 @@ function guid() {
 }
 
 function getPlusInfo(){
+    alert('getPlusInfo called');
     var uid = guid();
     if(window.device) {                  
         if(!localStorage.PUSH_MOBILE_TOKEN){
@@ -54,6 +55,7 @@ if( navigator.userAgent.match(/Windows/i) ){
 document.addEventListener("deviceready", onDeviceReady, false ); 
 
 function onDeviceReady(){ 
+    alert('onDeviceReady called');
     //fix app images and text size
     if (window.MobileAccessibility) {
         window.MobileAccessibility.usePreferredTextZoom(false);    
@@ -67,15 +69,15 @@ function onDeviceReady(){
 
     getPlusInfo(); 
 
-    if (!inBrowser) {
-        if (getUserinfo().MinorToken) {
-            //login(); 
-            preLogin();   
-        }
-        else {
-            logout();
-        } 
+     alert('before check isLogined');
+    if (getUserinfo().MinorToken) {
+        //login(); 
+        preLogin();   
     }
+    else {
+        logout();
+    } 
+ 
 
     document.addEventListener("backbutton", backFix, false); 
     document.addEventListener("resume", onAppResume, false);
@@ -320,18 +322,15 @@ var cameraButtons = [
 
 var html = Template7.templates.template_Login_Screen();
 $$(document.body).append(html); 
-//App.loginScreen();
 html = Template7.templates.template_Popover_Menu();
 $$(document.body).append(html);
-/*html = Template7.templates.template_AssetList();
-$$('.view-main').prepend(html);*/
 $$('.index-title').html(LANGUAGE.MENU_MSG00);
 $$('.index-search-input').attr('placeholder',LANGUAGE.COM_MSG06);
 $$('.index-search-cancel').html(LANGUAGE.COM_MSG04);
 $$('.index-search-nothing-found').html(LANGUAGE.COM_MSG05);
 
 if (inBrowser) {
-    if(localStorage.ACCOUNT && localStorage.PASSWORD) {
+    if(getUserinfo().MinorToken) {
         //login();    
         preLogin();
     }
@@ -1697,12 +1696,14 @@ function clearUserInfo(){
 
 function logout(){ 
     //alert('logout'); 
+    alert('logout called');
     clearUserInfo();
     App.loginScreen();   
 }
 
 function preLogin(){
-    console.log('prelogin here');
+     alert('prelogin called');
+    
     hideKeyboard();
     getPlusInfo();
     App.showPreloader();
