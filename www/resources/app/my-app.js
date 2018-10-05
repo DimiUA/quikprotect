@@ -458,7 +458,7 @@ $$('body').on('click', '.routeButton', function(){
     plus.push.createMessage("Welcome", payload, {cover:false} );
 });*/
 
-/*$$('body').on('click', '.index-title', function(){
+$$('body').on('click', '.index-title', function(){
     //var payload = {};
     //console.log('')
     var payload = {
@@ -477,7 +477,7 @@ $$('body').on('click', '.routeButton', function(){
     };
     //plus.push.createMessage("Welcome", payload, {cover:false} );
     showMsgNotification([payload]);
-});*/
+});
 
 $$('body').on('click', '#menu li', function () {
     var id = $$(this).attr('id');
