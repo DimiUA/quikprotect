@@ -36,7 +36,7 @@ function getPlusInfo(){
             localStorage.PUSH_DEVICE_TOKEN = uid;
             //localStorage.PUSH_DEVICE_TOKEN = "75ba1639-92ae-0c4c-d423-4fad1e48a49d"
         localStorage.PUSH_APPID_ID = 'webapp';
-        localStorage.DEVICE_TYPE = "web";        
+        localStorage.DEVICE_TYPE = "webapp";        
     }
 }
 
@@ -870,6 +870,8 @@ App.onPageInit('asset', function(page) {
                 if(result.length > 0 || result.ERROR == "ARREARS"){                    
                     showNoCreditMessage();                   
                     
+                }else if(result.ERROR == "LOCKED"){
+                    showModalMessage(TargetAsset.IMEI, LANGUAGE.PROMPT_MSG054);
                 }else{                   
                     balance();
                     App.addNotification({
@@ -900,6 +902,8 @@ App.onPageInit('asset', function(page) {
                 App.hidePreloader();                 
                 if(result.length > 0 || result.ERROR == "ARREARS"){                       
                     showNoCreditMessage();  
+                }else if(result.ERROR == "LOCKED"){
+                    showModalMessage(TargetAsset.IMEI, LANGUAGE.PROMPT_MSG054);
                 }else{ 
                 	balance();
                     App.addNotification({
@@ -1769,7 +1773,7 @@ function login(){
     var mobileToken = !localStorage.PUSH_MOBILE_TOKEN ? '111' : localStorage.PUSH_MOBILE_TOKEN;
     var appKey = !localStorage.PUSH_APP_KEY ? '111' : localStorage.PUSH_APP_KEY;
     var deviceToken = !localStorage.PUSH_DEVICE_TOKEN ? '111' : localStorage.PUSH_DEVICE_TOKEN;
-    var deviceType = !localStorage.DEVICE_TYPE ? 'web' : localStorage.DEVICE_TYPE;
+    var deviceType = !localStorage.DEVICE_TYPE ? 'webapp' : localStorage.DEVICE_TYPE;
     var account = $$("input[name='account']");
     var password = $$("input[name='password']"); 
     
@@ -1829,7 +1833,7 @@ function getNewData(){
     var mobileToken = !localStorage.PUSH_MOBILE_TOKEN ? '111' : localStorage.PUSH_MOBILE_TOKEN;
     var appKey = !localStorage.PUSH_APP_KEY ? '111' : localStorage.PUSH_APP_KEY;
     var deviceToken = !localStorage.PUSH_DEVICE_TOKEN ? '111' : localStorage.PUSH_DEVICE_TOKEN;
-    var deviceType = !localStorage.DEVICE_TYPE ? 'web' : localStorage.DEVICE_TYPE;
+    var deviceType = !localStorage.DEVICE_TYPE ? 'webapp' : localStorage.DEVICE_TYPE;
     
     var urlLogin = API_URL.URL_GET_LOGIN.format(localStorage.ACCOUNT
                                      , encodeURIComponent(localStorage.PASSWORD)
