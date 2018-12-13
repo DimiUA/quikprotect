@@ -1120,6 +1120,7 @@ App.onPageInit('asset.alarm', function (page) {
                 alarmOptions.options                                
             );                    
         
+        console.log(alarmOptions.options);
         App.showPreloader();
         JSON1.request(url, function(result){ 
                 console.log(result);                  
