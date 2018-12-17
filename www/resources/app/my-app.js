@@ -259,6 +259,7 @@ PAYPAL_URL.UPGRADELINK2 = "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&h
 var API_DOMIAN1 = "http://api.m2mglobaltech.com/QuikProtect/V1/Client/";
 var API_DOMIAN2 = "http://quiktrak.co/webapp/QuikProtect/Api2/";
 var API_DOMIAN3 = "http://api.m2mglobaltech.com/QuikTrak/V1/";
+var API_DOMIAN4 = "http://api.m2mglobaltech.com/Quikloc8/V1/";
 var API_URL = {};
 API_URL.URL_GET_LOGIN = API_DOMIAN1 + "Auth?account={0}&password={1}&appKey={2}&mobileToken={3}&deviceToken={4}&deviceType={5}";
 API_URL.URL_GET_LOGOUT = API_DOMIAN1 + "Logoff?MinorToken={0}&deviceToken={1}&mobileToken={2}";
@@ -276,6 +277,8 @@ API_URL.URL_SEND_COM_POS = API_DOMIAN2 + "SendPosCommand2.json?code={0}&imei={1}
 API_URL.URL_SEND_COM_STATUS = API_DOMIAN2 + "SendStatusCommand2.json?code={0}&imei={1}";
 //API_URL.URL_SET_GEOLOCK = API_DOMIAN1 + "SetGeoLock?MajorToken={0}&MinorToken={1}&imei={2}&state={3}";
 API_URL.URL_SET_GEOLOCK = API_DOMIAN1 + "setGeolock?MajorToken={0}&MinorToken={1}&imei={2}&state={3}";
+
+API_URL.URL_SET_DOOR = API_DOMIAN4 + "asset/door?MajorToken={0}&MinorToken={1}&code={2}&state={3}";
 
 API_URL.URL_GET_BALANCE = API_DOMIAN1 + "Balance?MajorToken={0}&MinorToken={1}";
 API_URL.URL_VERIFY_BY_EMAIL = API_DOMIAN1 + "VerifyCodeByEmail?email={0}";
@@ -581,12 +584,16 @@ $$('.assets_list').on('click', '.item_asset', function(){
   	/*App.alert('hi');*/
     var immobState = false;
     var geolockState = false;
+    var doorlockState = false;
 
     if ((parseInt(asset.StatusNew) & 1) > 0) {        
         geolockState = true; 
     }
     if ((parseInt(asset.StatusNew) & 2) > 0) {        
         immobState = true; 
+    }
+    if ((parseInt(asset.StatusNew) & 4) > 0) {        
+        doorlockState = true; 
     }
     mainView.router.load({
         url:'resources/templates/asset.html',
@@ -598,6 +605,7 @@ $$('.assets_list').on('click', '.item_asset', function(){
             Credits: userCredits,
             Geolock: geolockState,    
             Immob: immobState,
+            Doorlock: doorlockState,
         }
     });
 });
@@ -946,7 +954,7 @@ App.onPageInit('asset', function(page) {
                             message: LANGUAGE.COM_MSG03
                         });
                         
-                        var updateAsset = getStatusNewState({'asset':asset, 'changeState':{'name':'geolock','state':result.Data.State}});
+                        var updateAsset = getStatusNewState2({'asset':asset, 'changeState':{'name':'geolock','state':result.Data.State}});
                         if (updateAsset) {
                             updateAssetList(updateAsset);  
                         }                        
@@ -974,6 +982,62 @@ App.onPageInit('asset', function(page) {
                 App.alert(LANGUAGE.COM_MSG02);
             }  
         );
+
+    });
+
+    $$('.setDoorState').on('click', function () { 
+        var state = $$(this).data('state');
+        var userInfo = getUserinfo();       
+
+        var url = API_URL.URL_SET_DOOR.format(userInfo.MajorToken,
+                userInfo.MinorToken,
+                TargetAsset.IMEI,
+                state             
+            );
+        
+        /*App.showPreloader();        
+        JSON1.request(url, function(result){ 
+                App.hidePreloader();                 
+                console.log(result);
+
+                if (result.MajorCode == '000') {
+                    if (result.MinorCode == '1006') {
+                        showNoCreditMessage();  
+                    }else{
+
+                        App.addNotification({
+                            hold: 3000,                       
+                            message: LANGUAGE.COM_MSG03
+                        });
+                        
+                        var updateAsset = getStatusNewState({'asset':asset, 'changeState':{'name':'doorlock','state':result.Data.State}});
+                        if (updateAsset) {
+                            updateAssetList(updateAsset);  
+                        }                        
+                        $$('.setGeolockState').toggleClass('disabled');   
+                        balance();
+                    }                         
+                    
+                    
+                }else if(result.MajorCode == '100' && result.MinorCode == '1006'){
+                    showNoCreditMessage();  
+                }else if(result.MajorCode == '200' && result.Data && result.Data.ERROR == 'NOT_SUPPORT'){
+                    showModalMessage(TargetAsset.IMEI, LANGUAGE.PROMPT_MSG053);
+                }else{
+                    
+                    App.addNotification({
+                        hold: 5000,                       
+                        message: LANGUAGE.COM_MSG16
+                    });   
+                    balance();                 
+                }
+                
+                
+            }, function(result){
+                App.hidePreloader();                 
+                App.alert(LANGUAGE.COM_MSG02);
+            }  
+        );*/
 
     });
     
@@ -2610,6 +2674,19 @@ function getStatusNewState(params){
         }  
         res = params.asset;
     }      
+    return res;
+}
+
+function getStatusNewState2(params){  
+    var res = '';
+    if (params && params.asset && params.changeState && params.changeState.state) {
+        if (params.changeState.state == 'on' || params.changeState.state == 'lock') {  
+            params.asset.StatusNew = parseInt(params.asset.StatusNew) | Helper.StatusNewEnum[params.changeState.name] ;
+        }else{
+            params.asset.StatusNew = parseInt(params.asset.StatusNew) & ~Helper.StatusNewEnum[params.changeState.name] ;
+        }
+        res = params.asset;
+    }   
     return res;
 }
 
